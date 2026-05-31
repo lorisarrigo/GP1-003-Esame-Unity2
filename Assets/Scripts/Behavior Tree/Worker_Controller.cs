@@ -32,8 +32,8 @@ public class Worker_Controller : MonoBehaviour
 
     Status treeState = Status.Running;
     //Eventi
-
     public static event Action UpdateEnergy;
+    public static event Action OnSelectProduct;
 
     //Singleton
     public static Worker_Controller instance;
@@ -126,6 +126,7 @@ public class Worker_Controller : MonoBehaviour
     public Status GetOrder()
     {
         isWorking = true;
+        OnSelectProduct?.Invoke();
         return Status.Success;
     }
 

@@ -33,7 +33,14 @@ public class UIManager : MonoBehaviour
         }
         instance = this;
     }
-
+    private void OnEnable()
+    {
+        Worker_Controller.UpdateEnergy += EnergyBar;
+    }
+    private void OnDisable()
+    {
+        Worker_Controller.UpdateEnergy -= EnergyBar;
+    }
     public void EnergyBar()
     {
         energyBar.fillAmount = (float)Worker_Controller.instance.currentEnergy / (float)Worker_Controller.instance.maxEnergy;

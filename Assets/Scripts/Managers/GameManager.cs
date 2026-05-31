@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public void X2()
+    public void X5()
     {
         if (Time.timeScale == 1)
         {
-            Time.timeScale = 3.0f;
-            Debug.Log("Time scale 3");
+            Time.timeScale = 5.0f;
+            Debug.Log("Time scale 5");
             return;
         }
-        else if (Time.timeScale == 3)
+        else if (Time.timeScale == 5)
         {
             Time.timeScale = 1.0f;
             Debug.Log("Time scale 1");

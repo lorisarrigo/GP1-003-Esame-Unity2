@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -9,7 +10,8 @@ public enum WorkingStates
 public class Worker_Controller : MonoBehaviour
 {
     public int maxEnergy;
-    public int currentEnergy;
+    public float currentEnergy;
+    public bool isWorking = false;
 
     [Header("Waypoints Singoli")]
     [SerializeField] Transform startW;
@@ -29,7 +31,11 @@ public class Worker_Controller : MonoBehaviour
     BT_Root workingRoot;
 
     Status treeState = Status.Running;
+    //Eventi
 
+    public static event Action UpdateEnergy;
+
+    //Singleton
     public static Worker_Controller instance;
     private void Awake()
     {
@@ -59,16 +65,16 @@ public class Worker_Controller : MonoBehaviour
         // 1.2 A - Nodi Foglia - "fase Operativa"
 
         BT_Leaf _GoToStart = new("Start", GoToStart);
-        //BT_Leaf _GetOrder = new("Order", GetOrder);
+        BT_Leaf _GetOrder = new("Order", GetOrder);
         //BT_Leaf _GatherMaterials = new("Gather", GatherMaterials); //all'interno farò il ciclo per prendere i materiali e fare il restock per ogni singolo materiale
         BT_Leaf _Craft = new("Craft", Craft);
         BT_Leaf _Send = new("Send", Send);
 
         //// 1.2 B - Nodi Foglia - "fase Riposo"
 
-        //BT_Leaf _EnergyCheck = new ("ECheck", EnergyCheck);
+        BT_Leaf _EnergyCheck = new ("ECheck", EnergyCheck);
         BT_Leaf _Rest = new("Rest", Rest);
-        //BT_Leaf _Recharge = new ("Recharge", Recharge);
+        BT_Leaf _Recharge = new ("Recharge", Recharge);
 
 
         // -- 2. Creo l'albero --
@@ -76,23 +82,34 @@ public class Worker_Controller : MonoBehaviour
         workingRoot.AddChild(workingLoop);
 
         workingLoop.AddChild(_GoToStart);
-        //workingLoop.AddChild(_GetOrder);
+        workingLoop.AddChild(_GetOrder);
         //workingLoop.AddChild(_GatherMaterials);
         workingLoop.AddChild(_Craft);
         workingLoop.AddChild(_Send);
         workingLoop.AddChild(HasEnergy);
 
-        //    HasEnergy.AddChild(_EnergyCheck);
+            HasEnergy.AddChild(_EnergyCheck);
             HasEnergy.AddChild(restRoutine);
 
                 restRoutine.AddChild(_Rest);
-        //        restRoutine.AddChild(_Recharge);
+                restRoutine.AddChild(_Recharge);
 
 
         workingRoot.PrintTree();
     }
     private void Update()
     {
+        if (isWorking && currentEnergy > 0)
+        {
+            currentEnergy -= Time.deltaTime;
+            UpdateEnergy?.Invoke();
+        }
+        else if (!isWorking && currentEnergy < maxEnergy)
+        {
+            currentEnergy += Time.deltaTime;
+            UpdateEnergy?.Invoke();
+        }
+
         treeState = workingRoot.Process();
         if(treeState != Status.Running )
         {
@@ -101,33 +118,16 @@ public class Worker_Controller : MonoBehaviour
         }
     }
 
-    private Status MoveTo(Vector3 destination)
-    {
-        if (state == WorkingStates.Idle)
-        {
-            agent.SetDestination(destination);
-            state = WorkingStates.Walking;
-            return Status.Running;
-        }
-        if(agent.pathPending) return Status.Running;
-
-        if(agent.remainingDistance <= agent.stoppingDistance + 0.1f)
-        {
-            state = WorkingStates.Idle;
-            return Status.Success;
-        }
-        return Status.Running;
-    }
-
     public Status GoToStart()
     {
         return MoveTo(startW.position);
     }
 
-    //public Status GetOrder()
-    //{
-    //    Debug.Log("ottengo l'ordine");
-    //}
+    public Status GetOrder()
+    {
+        isWorking = true;
+        return Status.Success;
+    }
 
     //public Status GatherMaterials()
     //{
@@ -141,16 +141,37 @@ public class Worker_Controller : MonoBehaviour
     {
         return MoveTo(speditionTable.position);
     }
-    //public Status EnergyCheck()
-    //{
-        
-    //}
+    public Status EnergyCheck()
+    {
+        if(currentEnergy > 0) return Status.Success;
+        else return Status.Failure;
+    }
     public Status Rest()
     {
         return MoveTo(rechargeStation.position);
     }
-    //public Status Recharge()
-    //{
+    public Status Recharge()
+    {
+        isWorking = false;
+        if (currentEnergy < maxEnergy) return Status.Running;
+        else return Status.Success;
+    }
 
-    //}
+    private Status MoveTo(Vector3 destination)
+    {
+        if (state == WorkingStates.Idle)
+        {
+            agent.SetDestination(destination);
+            state = WorkingStates.Walking;
+            return Status.Running;
+        }
+        if (agent.pathPending) return Status.Running;
+
+        if (agent.remainingDistance <= agent.stoppingDistance + 0.1f)
+        {
+            state = WorkingStates.Idle;
+            return Status.Success;
+        }
+        return Status.Running;
+    }
 }

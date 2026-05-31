@@ -9857,7 +9857,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1887886706}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: X2
+        m_MethodName: X5
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13122,8 +13122,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2055491466}
-  - component: {fileID: 2055491467}
   - component: {fileID: 2055491468}
+  - component: {fileID: 2055491467}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -13159,8 +13159,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6343c6c63ec005740a2ff74063cb1140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Worker_Controller
-  maxEnergy: 100
+  maxEnergy: 25
   currentEnergy: 0
+  isWorking: 0
   startW: {fileID: 244012110}
   rechargeStation: {fileID: 579128892}
   workbench: {fileID: 2121177621}

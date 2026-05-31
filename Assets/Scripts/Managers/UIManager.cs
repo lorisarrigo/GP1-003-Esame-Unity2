@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    Worker_Controller wc;
-
     [Header("Product A")]
     [SerializeField] Image orderA;
     [SerializeField] int cubeQuantityA, sphereQuantityA, cylinderQuantityA;
@@ -34,12 +32,10 @@ public class UIManager : MonoBehaviour
             return;
         }
         instance = this;
-
-        wc.TryGetComponent<Worker_Controller>(out wc);
     }
 
     public void EnergyBar()
     {
-        energyBar.fillAmount = (float)wc.currentEnergy / (float)wc.maxEnergy;
+        energyBar.fillAmount = (float)Worker_Controller.instance.currentEnergy / (float)Worker_Controller.instance.maxEnergy;
     }
 }

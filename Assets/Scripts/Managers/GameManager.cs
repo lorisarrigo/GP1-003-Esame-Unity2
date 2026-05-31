@@ -2,15 +2,23 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void X2()
     {
-        
+        if (Time.timeScale == 1)
+        {
+            Time.timeScale = 3.0f;
+            Debug.Log("Time scale 3");
+            return;
+        }
+        else if (Time.timeScale == 3)
+        {
+            Time.timeScale = 1.0f;
+            Debug.Log("Time scale 1");
+        }
     }
-
-    // Update is called once per frame
-    void Update()
+    public void QuitGame()
     {
-        
+        Application.Quit();
+        Debug.Log("Quited");
     }
 }

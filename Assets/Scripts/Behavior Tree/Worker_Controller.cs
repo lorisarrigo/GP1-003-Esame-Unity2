@@ -36,6 +36,8 @@ public class Worker_Controller : MonoBehaviour
     public static event Action UpdateEnergy;
     public static event Action OnQuantityLeft;
     public static event Action OnSelectProduct;
+    public static event Action OnPlace;
+    public static event Action OnDeplace;
     public static event Action OnSend;
 
     //Singleton
@@ -185,21 +187,18 @@ public class Worker_Controller : MonoBehaviour
             Status wb = MoveTo(workbench.position);
             if (wb == Status.Success)
             {
+                OnPlace?.Invoke();
                 hasMaterial = false;
                 crateCheck++;
             }
             return Status.Running;
         }
     }
-    //nodo per craftare: da togliere in caso riesco a fare tutto nel nodo precedente
-    //public Status Craft()
-    //{
-    //    return MoveTo(workbench.position);
-    //}
 
     //finito il prodotto lo invia
     public Status Send()
     {
+        OnDeplace?.Invoke();
         return MoveTo(speditionTable.position);
     }
     /*una volta consegnato controlla se ha abbastanza energie

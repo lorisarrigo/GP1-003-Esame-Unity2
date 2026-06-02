@@ -1,26 +1,54 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     #region Random product
     [SerializeField] GameObject[] products;
+    [SerializeField] Transform workbenchTable;
+    [SerializeField] Transform sendingTable;
+
 
     public static event Action OnOrderSelected;
 
     private void OnEnable()
     {
         Worker_Controller.OnSelectProduct += RandomProduct;
+        Worker_Controller.OnPlace += PlaceObj;
+        Worker_Controller.OnDeplace += SendingObj;
     }
     private void OnDisable()
     {
         Worker_Controller.OnSelectProduct -= RandomProduct;
+        Worker_Controller.OnPlace -= PlaceObj;
+        Worker_Controller.OnDeplace -= SendingObj;
     }
     private void RandomProduct()
     {
         Product_Manager.instance.product = UnityEngine.Random.Range(0, products.Length);
         Debug.Log("ID prodotto: " + Product_Manager.instance.product);
         OnOrderSelected?.Invoke();
+    }
+    private void PlaceObj()
+    {
+        GameObject prod = products[Product_Manager.instance.product];
+        prod.transform.position = workbenchTable.position;
+        prod.SetActive(true);
+    }
+    private void SendingObj()
+    {
+        StartCoroutine(MoveProductRoutine());
+    }
+    IEnumerator MoveProductRoutine()
+    {
+        yield return new WaitForSeconds(1.5f);
+        GameObject prod = products[Product_Manager.instance.product];
+        prod.SetActive(false);
+        prod.transform.position = sendingTable.position;
+        prod.SetActive(true);
+        yield return new WaitForSeconds(1f);
+        prod.SetActive(false);
     }
     #endregion
     #region BTNs

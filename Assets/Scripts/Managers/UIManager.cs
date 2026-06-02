@@ -69,7 +69,7 @@ public class UIManager : MonoBehaviour
             Product_Manager.instance.currentOrder[0] = cubeQuantityA;
             Product_Manager.instance.currentOrder[1] = sphereQuantityA;
             Product_Manager.instance.currentOrder[2] = cylinderQuantityA;
-
+            return;
         }
         if (Product_Manager.instance.product == 1)
         {
@@ -79,6 +79,7 @@ public class UIManager : MonoBehaviour
             Product_Manager.instance.currentOrder[0] = cubeQuantityB;
             Product_Manager.instance.currentOrder[1] = sphereQuantityB;
             Product_Manager.instance.currentOrder[2] = cylinderQuantityB;
+            return;
         }
         if (Product_Manager.instance.product == 2)
         {
@@ -88,6 +89,7 @@ public class UIManager : MonoBehaviour
             Product_Manager.instance.currentOrder[0] = cubeQuantityC;
             Product_Manager.instance.currentOrder[1] = sphereQuantityC;
             Product_Manager.instance.currentOrder[2] = cylinderQuantityC;
+            return;
         }
     }
     void NoOrder()

@@ -7,7 +7,6 @@ public class Product_Manager : MonoBehaviour
     public int maxQuant;
     public int[] leftQuantity = new int[3];
     public int[] currentOrder = new int[3];
-
     public static event Action OnQuantityLeft;
 
     public static Product_Manager instance;

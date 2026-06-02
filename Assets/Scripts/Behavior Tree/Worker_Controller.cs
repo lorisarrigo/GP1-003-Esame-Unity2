@@ -34,6 +34,7 @@ public class Worker_Controller : MonoBehaviour
     Status treeState = Status.Running;
     //Eventi
     public static event Action UpdateEnergy;
+    public static event Action OnQuantityLeft;
     public static event Action OnSelectProduct;
     public static event Action OnSend;
 
@@ -152,17 +153,19 @@ public class Worker_Controller : MonoBehaviour
     public Status GatherMaterials()
     {
         if (crateCheck >= 3) return Status.Success;
-        if (UIManager.instance.currentOrder[crateCheck] == 0)
+        if (Product_Manager.instance.currentOrder[crateCheck] == 0)
         {
             crateCheck++;
             return Status.Running;
         }
         if (!hasMaterial)
         {
-            if (UIManager.instance.leftQuantity[crateCheck] < UIManager.instance.currentOrder[crateCheck])
+            if (Product_Manager.instance.leftQuantity[crateCheck] < Product_Manager.instance.currentOrder[crateCheck])
             {
                 Status wh = MoveTo(warehousesW[crateCheck].position);
-                if (wh == Status.Success) UIManager.instance.leftQuantity[crateCheck] += 5;
+                int restockQ = Product_Manager.instance.maxQuant - Product_Manager.instance.leftQuantity[crateCheck];
+                if (wh == Status.Success) Product_Manager.instance.leftQuantity[crateCheck] += restockQ;
+                OnQuantityLeft?.Invoke();
                 return Status.Running;
             }
             else
@@ -170,7 +173,8 @@ public class Worker_Controller : MonoBehaviour
                 Status crates = MoveTo(cratesW[crateCheck].position);
                 if (crates == Status.Success)
                 {
-                    UIManager.instance.leftQuantity[crateCheck] -= UIManager.instance.currentOrder[crateCheck];
+                    Product_Manager.instance.leftQuantity[crateCheck] -= Product_Manager.instance.currentOrder[crateCheck];
+                    OnQuantityLeft?.Invoke();
                     hasMaterial = true;
                 }
                 return Status.Running;
@@ -193,21 +197,20 @@ public class Worker_Controller : MonoBehaviour
     //    return MoveTo(workbench.position);
     //}
 
-    /*finito il prodotto lo invia:
-     * invoca un evento richiamato nello UIManager per disattivare l'immagine dell'ordine (aggiungere anche il reset delle quantità dell'ordine)
-     */
+    //finito il prodotto lo invia
     public Status Send()
     {
-        OnSend?.Invoke();
         return MoveTo(speditionTable.position);
     }
     /*una volta consegnato controlla se ha abbastanza energie
-     * se le ha, ricomincia il workingLoop, in quanto selector se questa non fallisce ignorerà il resto
-     * se non la ha fallisce il nodo e passa alla restingSequence
+     * invoca il reset dell'ordine sullo schermo;
+     * se le ha, ricomincia il workingLoop, in quanto selector se questa non fallisce ignorerà il resto;
+     * se non la ha fallisce il nodo e passa alla restingSequence.
      */
     public Status EnergyCheck()
     {
-        if(currentEnergy >= 0) return Status.Success;
+        OnSend?.Invoke();
+        if (currentEnergy >= 0) return Status.Success;
         else return Status.Failure;
     }
     //lo mandiamo a riposare

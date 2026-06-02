@@ -337,9 +337,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 228319aa1e46f914facfab617ea72252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  product: 0
-  leftQuantity: 050000000500000005000000
-  currentOrder: 000000000000000000000000
   orderA: {fileID: 1611240392}
   cubeQuantityA: 2
   sphereQuantityA: 0
@@ -6377,6 +6374,54 @@ Transform:
   - {fileID: 2004280289}
   m_Father: {fileID: 877470345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &919628239
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 919628240}
+  - component: {fileID: 919628241}
+  m_Layer: 0
+  m_Name: Product_Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &919628240
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919628239}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1286673864}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &919628241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919628239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bcac36e42c9563459d29e40fb0b89ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Product_Manager
+  product: 0
+  maxQuant: 5
+  leftQuantity: 000000000000000000000000
+  currentOrder: 000000000000000000000000
 --- !u!1 &921931805
 GameObject:
   m_ObjectHideFlags: 0
@@ -8305,6 +8350,7 @@ Transform:
   - {fileID: 1484954180}
   - {fileID: 1887886705}
   - {fileID: 30431561}
+  - {fileID: 919628240}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1377710751
@@ -13166,14 +13212,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6343c6c63ec005740a2ff74063cb1140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Worker_Controller
-  maxEnergy: 25
+  maxEnergy: 50
   currentEnergy: 0
   isWorking: 0
   hasMaterial: 0
   startW: {fileID: 244012110}
-  rechargeStation: {fileID: 579128892}
   workbench: {fileID: 2121177621}
   speditionTable: {fileID: 622193617}
+  rechargeStation: {fileID: 579128892}
   cratesW:
   - {fileID: 79675637}
   - {fileID: 251589009}

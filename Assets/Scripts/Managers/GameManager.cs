@@ -18,8 +18,8 @@ public class GameManager : MonoBehaviour
     }
     private void RandomProduct()
     {
-        UIManager.instance.product = UnityEngine.Random.Range(0, products.Length);
-        Debug.Log("ID prodotto: " + UIManager.instance.product);
+        Product_Manager.instance.product = UnityEngine.Random.Range(0, products.Length);
+        Debug.Log("ID prodotto: " + Product_Manager.instance.product);
         OnOrderSelected?.Invoke();
     }
     #endregion

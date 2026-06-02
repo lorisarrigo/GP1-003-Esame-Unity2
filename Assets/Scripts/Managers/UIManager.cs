@@ -4,9 +4,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public int product;
-    public int[] leftQuantity = new int[3];
-    public int[] currentOrder = new int[3];
+    
 
     [Header("Product A")]
     [SerializeField] GameObject orderA;
@@ -40,12 +38,16 @@ public class UIManager : MonoBehaviour
     private void OnEnable()
     {
         Worker_Controller.UpdateEnergy += EnergyBar;
+        Worker_Controller.OnQuantityLeft += LeftQuantity;
+        Product_Manager.OnQuantityLeft += LeftQuantity;
         GameManager.OnOrderSelected += Order;
         Worker_Controller.OnSend += NoOrder;
     }
     private void OnDisable()
     {
         Worker_Controller.UpdateEnergy -= EnergyBar;
+        Worker_Controller.OnQuantityLeft -= LeftQuantity;
+        Product_Manager.OnQuantityLeft -= LeftQuantity;
         GameManager.OnOrderSelected -= Order;
         Worker_Controller.OnSend -= NoOrder;
     }
@@ -53,35 +55,39 @@ public class UIManager : MonoBehaviour
     {
         energyBar.fillAmount = Worker_Controller.instance.currentEnergy / Worker_Controller.instance.maxEnergy;
     }
+    private void LeftQuantity()
+    {
+        quantityLeft_Txt.text = Product_Manager.instance.leftQuantity[0] + "     " + Product_Manager.instance.leftQuantity[1] + "     " + Product_Manager.instance.leftQuantity[2];
+    }
     private void Order()
     {
-        if (product == 0)
+        if (Product_Manager.instance.product == 0)
         {
             orderA.SetActive(true);
 
             quantity_Txt.text = cubeQuantityA + "\n  \n" + sphereQuantityA + "\n  \n" + cylinderQuantityA;
-            currentOrder[0] = cubeQuantityA;
-            currentOrder[1] = sphereQuantityA;
-            currentOrder[2] = cylinderQuantityA;
+            Product_Manager.instance.currentOrder[0] = cubeQuantityA;
+            Product_Manager.instance.currentOrder[1] = sphereQuantityA;
+            Product_Manager.instance.currentOrder[2] = cylinderQuantityA;
 
         }
-        if (product == 1)
+        if (Product_Manager.instance.product == 1)
         {
             orderB.SetActive(true);
 
             quantity_Txt.text = cubeQuantityB + "\n  \n" + sphereQuantityB + "\n  \n" + cylinderQuantityB;
-            currentOrder[0] = cubeQuantityB;
-            currentOrder[1] = sphereQuantityB;
-            currentOrder[2] = cylinderQuantityB;
+            Product_Manager.instance.currentOrder[0] = cubeQuantityB;
+            Product_Manager.instance.currentOrder[1] = sphereQuantityB;
+            Product_Manager.instance.currentOrder[2] = cylinderQuantityB;
         }
-        if (product == 2)
+        if (Product_Manager.instance.product == 2)
         {
             orderC.SetActive(true);
 
             quantity_Txt.text = cubeQuantityC + "\n  \n" + sphereQuantityC + "\n  \n" + cylinderQuantityC;
-            currentOrder[0] = cubeQuantityC;
-            currentOrder[1] = sphereQuantityC;
-            currentOrder[2] = cylinderQuantityC;
+            Product_Manager.instance.currentOrder[0] = cubeQuantityC;
+            Product_Manager.instance.currentOrder[1] = sphereQuantityC;
+            Product_Manager.instance.currentOrder[2] = cylinderQuantityC;
         }
     }
     void NoOrder()
@@ -89,5 +95,6 @@ public class UIManager : MonoBehaviour
         orderA.SetActive(false);
         orderB.SetActive(false);
         orderC.SetActive(false);
+        quantity_Txt.text = 0 + "\n  \n" + 0 + "\n  \n" + 0;
     }
 }

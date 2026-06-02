@@ -11,19 +11,20 @@ public class Worker_Controller : MonoBehaviour
 {
     public int maxEnergy;
     public float currentEnergy;
-    public bool isWorking = false;
+    [SerializeField] bool isWorking = false;
+    [SerializeField] bool hasMaterial = false;
 
     [Header("Waypoints Singoli")]
     [SerializeField] Transform startW;
-    [SerializeField] Transform rechargeStation;
     [SerializeField] Transform workbench;
     [SerializeField] Transform speditionTable;
-
+    [SerializeField] Transform rechargeStation;
 
     [Header("Waypoints per i materiali")]
-    [SerializeField] Transform[] crates; //le casse in basso dove si trovano i materiali
-    [SerializeField] Transform[] warehouses; //i magazzini in alto dove il lavoratore farà il restock
+    [SerializeField] Transform[] cratesW;
+    [SerializeField] Transform[] warehousesW;
 
+    [SerializeField] int crateCheck = 0;
 
     WorkingStates state = WorkingStates.Idle;
     
@@ -34,10 +35,11 @@ public class Worker_Controller : MonoBehaviour
     //Eventi
     public static event Action UpdateEnergy;
     public static event Action OnSelectProduct;
+    public static event Action OnSend;
 
     //Singleton
     public static Worker_Controller instance;
-    private void Awake()
+    void Awake()
     {
         if(instance != null)
         {
@@ -46,34 +48,33 @@ public class Worker_Controller : MonoBehaviour
         }
         instance = this;
     }
-    private void Start()
+    void Start()
     {
         currentEnergy = maxEnergy;
         agent = GetComponent<NavMeshAgent>();
 
-        workingRoot = new BT_Root("Root");
-
         //da qui in poi si crea l'albero
 
         // -- 1. Dichiaro i nodi --
+        workingRoot = new ("Root");
 
         // 1.1 - Nodi strutturali (Sequence e Selector)
         BT_Sequence workingLoop = new("Work");
         BT_Selector HasEnergy = new ("Energy?");
-        BT_Sequence restRoutine = new ("Rest");
+        BT_Sequence restingSequence = new ("Rest");
 
         // 1.2 A - Nodi Foglia - "fase Operativa"
 
         BT_Leaf _GoToStart = new("Start", GoToStart);
         BT_Leaf _GetOrder = new("Order", GetOrder);
-        //BT_Leaf _GatherMaterials = new("Gather", GatherMaterials); //all'interno farò il ciclo per prendere i materiali e fare il restock per ogni singolo materiale
-        BT_Leaf _Craft = new("Craft", Craft);
+        BT_Leaf _GatherMaterials = new("Gather", GatherMaterials); //all'interno farò il ciclo per prendere i materiali e fare il restock per ogni singolo materiale
+        //BT_Leaf _Craft = new("Craft", Craft);
         BT_Leaf _Send = new("Send", Send);
 
         //// 1.2 B - Nodi Foglia - "fase Riposo"
 
         BT_Leaf _EnergyCheck = new ("ECheck", EnergyCheck);
-        BT_Leaf _Rest = new("Rest", Rest);
+        BT_Leaf _GoToRest = new("GoRest", GoToRest);
         BT_Leaf _Recharge = new ("Recharge", Recharge);
 
 
@@ -83,33 +84,36 @@ public class Worker_Controller : MonoBehaviour
 
         workingLoop.AddChild(_GoToStart);
         workingLoop.AddChild(_GetOrder);
-        //workingLoop.AddChild(_GatherMaterials);
-        workingLoop.AddChild(_Craft);
+        workingLoop.AddChild(_GatherMaterials);
+        //workingLoop.AddChild(_Craft);
         workingLoop.AddChild(_Send);
         workingLoop.AddChild(HasEnergy);
 
             HasEnergy.AddChild(_EnergyCheck);
-            HasEnergy.AddChild(restRoutine);
+            HasEnergy.AddChild(restingSequence);
 
-                restRoutine.AddChild(_Rest);
-                restRoutine.AddChild(_Recharge);
+                restingSequence.AddChild(_GoToRest);
+                restingSequence.AddChild(_Recharge);
 
 
         workingRoot.PrintTree();
     }
-    private void Update()
+    void Update()
     {
+        //Deploy e Recharge: quando il worker ottiene l'ordine inizia a scendere l'energia 
         if (isWorking && currentEnergy > 0)
         {
             currentEnergy -= Time.deltaTime;
             UpdateEnergy?.Invoke();
         }
+        //mentre, quando finisce e arriva alla rechargeStation la ricarica
         else if (!isWorking && currentEnergy < maxEnergy)
         {
             currentEnergy += Time.deltaTime;
             UpdateEnergy?.Invoke();
         }
 
+        //permettiamo all'albero di "ciclare all'infinito"
         treeState = workingRoot.Process();
         if(treeState != Status.Running )
         {
@@ -117,40 +121,104 @@ public class Worker_Controller : MonoBehaviour
             treeState = Status.Running;
         }
     }
-
+    //va allo startPoint
     public Status GoToStart()
     {
         return MoveTo(startW.position);
     }
-
+    /*una volta raggiunto lo start ottiene l'ordine:
+     * setta la variabile "isWorking" a true per iniziare il deploying dell'energia;
+     * invoca l'evento che sceglie randomicamente un'rdine nel GameManager;
+     * setta il "crateCheck a 0;
+     * e passa al prossimo nodo.
+     */
     public Status GetOrder()
     {
         isWorking = true;
         OnSelectProduct?.Invoke();
+        crateCheck = 0;
         return Status.Success;
     }
-
-    //public Status GatherMaterials()
-    //{
-      
-    //}
-    public Status Craft()
+    /*una volta scelto l'ordine:
+     * controlla se il crateCheck è al massimo;
+     * nel caso in cui non è richiesto il materiale lo salta 
+     * controlla se ha preso il materiale:
+     *      se non lo ha preso, controlla se c'è ne sono abbastanza:
+     *          se quel materiale è finito, va a rifornirlo;
+     *          se no, va a prendere il materiale richiesto, riduce la quantità presa da quella presente, e passa alla workbench
+     *      se no, lo mette sulla workbench e aumenta il Check
+     * tutto viene ciclato grazie al controllo iniziale, se il Check è al massimo passa al nodo successivo
+     */
+    public Status GatherMaterials()
     {
-        return MoveTo(workbench.position);
+        if (crateCheck >= 3) return Status.Success;
+        if (UIManager.instance.currentOrder[crateCheck] == 0)
+        {
+            crateCheck++;
+            return Status.Running;
+        }
+        if (!hasMaterial)
+        {
+            if (UIManager.instance.leftQuantity[crateCheck] < UIManager.instance.currentOrder[crateCheck])
+            {
+                Status wh = MoveTo(warehousesW[crateCheck].position);
+                if (wh == Status.Success) UIManager.instance.leftQuantity[crateCheck] += 5;
+                return Status.Running;
+            }
+            else
+            {
+                Status crates = MoveTo(cratesW[crateCheck].position);
+                if (crates == Status.Success)
+                {
+                    UIManager.instance.leftQuantity[crateCheck] -= UIManager.instance.currentOrder[crateCheck];
+                    hasMaterial = true;
+                }
+                return Status.Running;
+            }
+        }
+        else
+        {
+            Status wb = MoveTo(workbench.position);
+            if (wb == Status.Success)
+            {
+                hasMaterial = false;
+                crateCheck++;
+            }
+            return Status.Running;
+        }
     }
+    //nodo per craftare: da togliere in caso riesco a fare tutto nel nodo precedente
+    //public Status Craft()
+    //{
+    //    return MoveTo(workbench.position);
+    //}
+
+    /*finito il prodotto lo invia:
+     * invoca un evento richiamato nello UIManager per disattivare l'immagine dell'ordine (aggiungere anche il reset delle quantità dell'ordine)
+     */
     public Status Send()
     {
+        OnSend?.Invoke();
         return MoveTo(speditionTable.position);
     }
+    /*una volta consegnato controlla se ha abbastanza energie
+     * se le ha, ricomincia il workingLoop, in quanto selector se questa non fallisce ignorerà il resto
+     * se non la ha fallisce il nodo e passa alla restingSequence
+     */
     public Status EnergyCheck()
     {
-        if(currentEnergy > 0) return Status.Success;
+        if(currentEnergy >= 0) return Status.Success;
         else return Status.Failure;
     }
-    public Status Rest()
+    //lo mandiamo a riposare
+    public Status GoToRest()
     {
         return MoveTo(rechargeStation.position);
     }
+    /*una volta raggiunto la rechargeStation:
+     * setta a false "isWorking"
+     * e finchè l'energia non è al massimo resta nel nodo, fermandolo alla recharge station
+     */
     public Status Recharge()
     {
         isWorking = false;
@@ -158,7 +226,8 @@ public class Worker_Controller : MonoBehaviour
         else return Status.Success;
     }
 
-    private Status MoveTo(Vector3 destination)
+    //lo stato che fa muovere il worker
+    Status MoveTo(Vector3 destination)
     {
         if (state == WorkingStates.Idle)
         {

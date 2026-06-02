@@ -6,6 +6,8 @@ public class GameManager : MonoBehaviour
     #region Random product
     [SerializeField] GameObject[] products;
 
+    public static event Action OnOrderSelected;
+
     private void OnEnable()
     {
         Worker_Controller.OnSelectProduct += RandomProduct;
@@ -14,10 +16,11 @@ public class GameManager : MonoBehaviour
     {
         Worker_Controller.OnSelectProduct -= RandomProduct;
     }
-    public void RandomProduct()
+    private void RandomProduct()
     {
         UIManager.instance.product = UnityEngine.Random.Range(0, products.Length);
-        Debug.Log(UIManager.instance.product);
+        Debug.Log("ID prodotto: " + UIManager.instance.product);
+        OnOrderSelected?.Invoke();
     }
     #endregion
     #region BTNs

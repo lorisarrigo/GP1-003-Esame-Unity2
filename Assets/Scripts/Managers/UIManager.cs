@@ -5,7 +5,8 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public int product;
-    //public int[] leftQuantity = new int[3];
+    public int[] leftQuantity = new int[3];
+    public int[] currentOrder = new int[3];
 
     [Header("Product A")]
     [SerializeField] GameObject orderA;
@@ -39,39 +40,54 @@ public class UIManager : MonoBehaviour
     private void OnEnable()
     {
         Worker_Controller.UpdateEnergy += EnergyBar;
-        Worker_Controller.OnSelectProduct += UpdateOrder;
+        GameManager.OnOrderSelected += Order;
+        Worker_Controller.OnSend += NoOrder;
     }
     private void OnDisable()
     {
         Worker_Controller.UpdateEnergy -= EnergyBar;
-        Worker_Controller.OnSelectProduct -= UpdateOrder;
+        GameManager.OnOrderSelected -= Order;
+        Worker_Controller.OnSend -= NoOrder;
     }
     private void EnergyBar()
     {
         energyBar.fillAmount = Worker_Controller.instance.currentEnergy / Worker_Controller.instance.maxEnergy;
     }
-    private void UpdateOrder()
+    private void Order()
     {
-        if(product == 0)
+        if (product == 0)
         {
             orderA.SetActive(true);
-            orderB.SetActive(false);
-            orderC.SetActive(false);
+
             quantity_Txt.text = cubeQuantityA + "\n  \n" + sphereQuantityA + "\n  \n" + cylinderQuantityA;
+            currentOrder[0] = cubeQuantityA;
+            currentOrder[1] = sphereQuantityA;
+            currentOrder[2] = cylinderQuantityA;
+
         }
-        if(product == 1)
+        if (product == 1)
         {
-            orderA.SetActive(false);
             orderB.SetActive(true);
-            orderC.SetActive(false);
+
             quantity_Txt.text = cubeQuantityB + "\n  \n" + sphereQuantityB + "\n  \n" + cylinderQuantityB;
+            currentOrder[0] = cubeQuantityB;
+            currentOrder[1] = sphereQuantityB;
+            currentOrder[2] = cylinderQuantityB;
         }
-        if(product == 2)
+        if (product == 2)
         {
-            orderA.SetActive(false);
-            orderB.SetActive(false);
             orderC.SetActive(true);
+
             quantity_Txt.text = cubeQuantityC + "\n  \n" + sphereQuantityC + "\n  \n" + cylinderQuantityC;
+            currentOrder[0] = cubeQuantityC;
+            currentOrder[1] = sphereQuantityC;
+            currentOrder[2] = cylinderQuantityC;
         }
+    }
+    void NoOrder()
+    {
+        orderA.SetActive(false);
+        orderB.SetActive(false);
+        orderC.SetActive(false);
     }
 }

@@ -166,7 +166,11 @@ public class Worker_Controller : MonoBehaviour
             {
                 Status wh = MoveTo(warehousesW[crateCheck].position);
                 int restockQ = Product_Manager.instance.maxQuant - Product_Manager.instance.leftQuantity[crateCheck];
-                if (wh == Status.Success) Product_Manager.instance.leftQuantity[crateCheck] += restockQ;
+                if (wh == Status.Success)
+                {
+                    Product_Manager.instance.leftQuantity[crateCheck] += restockQ;
+                    Product_Manager.instance.Material[crateCheck].SetActive(true);
+                }
                 OnQuantityLeft?.Invoke();
                 return Status.Running;
             }
@@ -176,6 +180,8 @@ public class Worker_Controller : MonoBehaviour
                 if (crates == Status.Success)
                 {
                     Product_Manager.instance.leftQuantity[crateCheck] -= Product_Manager.instance.currentOrder[crateCheck];
+                    if (Product_Manager.instance.leftQuantity[crateCheck] <= 1)
+                        Product_Manager.instance.Material[crateCheck].SetActive(false);
                     OnQuantityLeft?.Invoke();
                     hasMaterial = true;
                 }

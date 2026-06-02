@@ -5052,11 +5052,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 874270016}
   - {fileID: 441072547}
+  - {fileID: 874270016}
+  - {fileID: 1020413274}
   - {fileID: 2082490538}
   - {fileID: 512745782}
-  - {fileID: 1020413274}
   m_Father: {fileID: 1031466655}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &736164806
@@ -6425,6 +6425,10 @@ MonoBehaviour:
   maxQuant: 5
   leftQuantity: 000000000000000000000000
   currentOrder: 000000000000000000000000
+  Material:
+  - {fileID: 1466818467}
+  - {fileID: 722352061}
+  - {fileID: 1397110969}
 --- !u!1 &921931805
 GameObject:
   m_ObjectHideFlags: 0
@@ -8614,9 +8618,9 @@ Transform:
   m_Children:
   - {fileID: 441423984}
   - {fileID: 1207215931}
+  - {fileID: 829264235}
   - {fileID: 1922698411}
   - {fileID: 454534539}
-  - {fileID: 829264235}
   m_Father: {fileID: 1674499355}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1413188916
@@ -9271,10 +9275,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 736164807}
+  - {fileID: 1614565940}
   - {fileID: 1061933354}
   - {fileID: 908037823}
-  - {fileID: 1614565940}
-  - {fileID: 736164807}
   - {fileID: 1434162369}
   m_Father: {fileID: 1779542064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -13457,7 +13461,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 8
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 300

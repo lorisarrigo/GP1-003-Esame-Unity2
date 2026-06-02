@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    
-
     [Header("Product A")]
     [SerializeField] GameObject orderA;
     [SerializeField] int cubeQuantityA, sphereQuantityA, cylinderQuantityA;

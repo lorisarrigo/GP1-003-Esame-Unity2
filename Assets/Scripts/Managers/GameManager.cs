@@ -9,34 +9,33 @@ public class GameManager : MonoBehaviour
     [SerializeField] Transform workbenchTable;
     [SerializeField] Transform sendingTable;
 
-
     public static event Action OnOrderSelected;
 
-    private void OnEnable()
+    void OnEnable()
     {
-        Worker_Controller.OnSelectProduct += RandomProduct;
-        Worker_Controller.OnPlace += PlaceObj;
+        Worker_Controller.OnRandomProduct += RandomProduct;
+        Worker_Controller.OnPlaceWb += PlaceObj;
         Worker_Controller.OnDeplace += SendingObj;
     }
-    private void OnDisable()
+    void OnDisable()
     {
-        Worker_Controller.OnSelectProduct -= RandomProduct;
-        Worker_Controller.OnPlace -= PlaceObj;
+        Worker_Controller.OnRandomProduct -= RandomProduct;
+        Worker_Controller.OnPlaceWb -= PlaceObj;
         Worker_Controller.OnDeplace -= SendingObj;
     }
-    private void RandomProduct()
+    void RandomProduct()
     {
         Product_Manager.instance.product = UnityEngine.Random.Range(0, products.Length);
         Debug.Log("ID prodotto: " + Product_Manager.instance.product);
         OnOrderSelected?.Invoke();
     }
-    private void PlaceObj()
+    void PlaceObj()
     {
         GameObject prod = products[Product_Manager.instance.product];
         prod.transform.position = workbenchTable.position;
         prod.SetActive(true);
     }
-    private void SendingObj()
+    void SendingObj()
     {
         StartCoroutine(MoveProductRoutine());
     }

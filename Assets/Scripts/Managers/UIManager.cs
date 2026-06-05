@@ -4,17 +4,18 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    /* Lo UIManager, gestisce:
+        * l'aggiornamento della fillbar;
+        * l'aggiornamento dei vari Txt;
+     */
     [Header("Product A")]
     [SerializeField] GameObject orderA;
-    [SerializeField] int[] QuantityA;
 
     [Header("Product B")]
     [SerializeField] GameObject orderB;
-    [SerializeField] int[] QuantityB;
 
     [Header("Product C")]
     [SerializeField] GameObject orderC;
-    [SerializeField] int[] QuantityC;
 
     [Header("Txt")]
     [SerializeField] TMP_Text quantity_Txt;
@@ -23,17 +24,6 @@ public class UIManager : MonoBehaviour
 
     [Header("Energy")]
     [SerializeField] Image energyBar;
-
-    public static UIManager instance;
-    public void Awake()
-    {
-        if (instance != null)
-        {
-            Destroy(instance);
-            return;
-        }
-        instance = this;
-    }
     void OnEnable()
     {
         Worker_Controller.OnUpdateEnergy += EnergyBar;
@@ -65,27 +55,27 @@ public class UIManager : MonoBehaviour
         if (Product_Manager.instance.product == 0)
         {
             orderA.SetActive(true);
-            Product_Manager.instance.currentOrder = QuantityA;
+            Product_Manager.instance.currentOrder = Product_Manager.instance.QuantityA;
             
-            quantity_Txt.text = QuantityA[0] + "\n  \n" + QuantityA[1] + "\n  \n" + QuantityA[2];
+            quantity_Txt.text = Product_Manager.instance.QuantityA[0] + "\n  \n" + Product_Manager.instance.QuantityA[1] + "\n  \n" + Product_Manager.instance.QuantityA[2];
             return;
         }
         if (Product_Manager.instance.product == 1)
         {
             orderB.SetActive(true);
 
-            Product_Manager.instance.currentOrder = QuantityB;
+            Product_Manager.instance.currentOrder = Product_Manager.instance.QuantityB;
             
-            quantity_Txt.text = QuantityB[0] + "\n  \n" + QuantityB[1] + "\n  \n" + QuantityB[2];
+            quantity_Txt.text = Product_Manager.instance.QuantityB[0] + "\n  \n" + Product_Manager.instance.QuantityB[1] + "\n  \n" + Product_Manager.instance.QuantityB[2];
             return;
         }
         if (Product_Manager.instance.product == 2)
         {
             orderC.SetActive(true);
 
-            Product_Manager.instance.currentOrder = QuantityC;
+            Product_Manager.instance.currentOrder = Product_Manager.instance.QuantityC;
             
-            quantity_Txt.text = QuantityC[0] + "\n  \n" + QuantityC[1] + "\n  \n" + QuantityC[2];
+            quantity_Txt.text = Product_Manager.instance.QuantityC[0] + "\n  \n" + Product_Manager.instance.QuantityC[1] + "\n  \n" + Product_Manager.instance.QuantityC[2];
             return;
         }
     }

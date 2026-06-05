@@ -3,11 +3,24 @@ using UnityEngine;
 using UnityEngine.AI;
 public enum WorkingStates
 { 
+    Walking,
     Idle,
-    Walking
 }
 public class Worker_Controller : MonoBehaviour
 {
+    //Controller dell'IA del lavoratore, contiene il Bheavior tree e le varie azioni che deve svolgere 
+
+    //setting componenti e variabili
+    NavMeshAgent agent;
+    BT_Root workingRoot;
+
+    WorkingStates state = WorkingStates.Idle;
+    Status treeState = Status.Running;
+    
+    /*bool per controllare se sta lavorando e se ha il materiale:
+     * isWorking permette di switchare tra l'affaticamento e la ricarica
+     * hasMaterial permette di riconoscere se il lavoratore ha preso o meno un il materiale corrente
+     */
     bool isWorking = false;
     bool hasMaterial = false;
 
@@ -25,24 +38,21 @@ public class Worker_Controller : MonoBehaviour
     [SerializeField] Transform[] cratesW;
     [SerializeField] Transform[] warehousesW;
 
+    //questa variabile è un indice che permette al controller di capire quale materiale deve prendere
     int crateCheck = 0;
 
-    WorkingStates state = WorkingStates.Idle;
-    
-    NavMeshAgent agent;
-    BT_Root workingRoot;
+    //Eventi (in parte ad ogniuno ho segnato gli script iscritti agli eventi
+    public static event Action OnUpdateEnergy; //UIManager
+    public static event Action OnQuantityLeft; //UIManager
+    public static event Action OnRandomProduct; //GameManager
+    public static event Action OnPlaceWb; //GameManager
+    public static event Action OnDeplace; //GameManager
+    public static event Action OnSend; //UIManager
 
-    Status treeState = Status.Running;
-
-    //Eventi
-    public static event Action OnUpdateEnergy;
-    public static event Action OnQuantityLeft;
-    public static event Action OnRandomProduct;
-    public static event Action OnPlaceWb;
-    public static event Action OnDeplace;
-    public static event Action OnSend;
-
-    //Singleton
+    /*Singleton
+     * la classe viene viene richiamata in:
+        * UIManager per aggiornare la fillbar
+     */
     public static Worker_Controller instance;
     void Awake()
     {
@@ -61,21 +71,22 @@ public class Worker_Controller : MonoBehaviour
         //da qui in poi si crea l'albero
 
         // -- 1. Dichiaro i nodi --
+        // 1.1 - Nodo Radice (Root)
         workingRoot = new ("Root");
 
-        // 1.1 - Nodi strutturali (Sequence e Selector)
+        // 1.2 - Nodi strutturali (Sequence e Selector)
         BT_Sequence workingLoop = new("Work");
         BT_Selector HasEnergy = new ("Energy?");
         BT_Sequence restingSequence = new ("Rest");
 
-        // 1.2 A - Nodi Foglia - "fase Operativa"
+        // 1.3 A - Nodi Foglia - "fase Operativa"
 
         BT_Leaf _GoToStart = new("Start", GoToStart);
         BT_Leaf _GetOrder = new("Order", GetOrder);
-        BT_Leaf _GatherMaterials = new("Gather", GatherMaterials); //all'interno farò il ciclo per prendere i materiali e fare il restock per ogni singolo materiale
+        BT_Leaf _GatherMaterials = new("Gather", GatherMaterials);
         BT_Leaf _Send = new("Send", Send);
 
-        //// 1.2 B - Nodi Foglia - "fase Riposo"
+        // 1.3 B - Nodi Foglia - "fase Riposo"
 
         BT_Leaf _EnergyCheck = new ("ECheck", EnergyCheck);
         BT_Leaf _GoToRest = new("GoRest", GoToRest);
@@ -84,22 +95,25 @@ public class Worker_Controller : MonoBehaviour
 
         // -- 2. Creo l'albero --
 
+        // 2.1 lo fa partire dalla prima Sequence
         workingRoot.AddChild(workingLoop);
 
+        // 2.2 esegue la Sequence
         workingLoop.AddChild(_GoToStart);
         workingLoop.AddChild(_GetOrder);
         workingLoop.AddChild(_GatherMaterials);
         workingLoop.AddChild(_Send);
-        workingLoop.AddChild(HasEnergy);
 
+        // 2.3 arriva al Selector
+        workingLoop.AddChild(HasEnergy);
+            
+        // 2.4 esegue il Selector, il quale secondo nodo è una Sequence
             HasEnergy.AddChild(_EnergyCheck);
             HasEnergy.AddChild(restingSequence);
 
+        // 2.5 nel caso esegue la Sequence
                 restingSequence.AddChild(_GoToRest);
                 restingSequence.AddChild(_Recharge);
-
-
-        workingRoot.PrintTree();
     }
     void Update()
     {
@@ -130,10 +144,10 @@ public class Worker_Controller : MonoBehaviour
         return MoveTo(startW.position);
     }
     /*una volta raggiunto lo start ottiene l'ordine:
-     * setta la variabile "isWorking" a true per iniziare il deploying dell'energia;
-     * invoca l'evento che sceglie randomicamente un'rdine nel GameManager;
-     * setta il "crateCheck a 0;
-     * e passa al prossimo nodo.
+        * setta la variabile "isWorking" a true per iniziare il deploying dell'energia;
+        * invoca l'evento che sceglie randomicamente un'ordine nel GameManager;
+        * setta il "crateCheck" a 0;
+        * e passa al prossimo nodo.
      */
     Status GetOrder()
     {
@@ -144,14 +158,14 @@ public class Worker_Controller : MonoBehaviour
     }
     //una volta mostrato l'ordine controlla se ci sono abbastanza materiali, nel caso non ci siano rifornisce, recupera i materiali e inizia a craftare
     /* spiegazione a punti
-     * controlla se il crateCheck è al massimo;
-     * nel caso in cui non è richiesto il materiale lo salta 
-     * controlla se ha preso il materiale:
-     *      se non lo ha preso, controlla se c'è ne sono abbastanza:
-     *          se quel materiale è finito, va a rifornirlo;
-     *          se no, va a prendere il materiale richiesto, riduce la quantità presa da quella presente, e passa alla workbench
-     *      se no, lo mette sulla workbench e aumenta il Check
-     * tutto viene ciclato grazie al controllo iniziale, se il Check è al massimo passa al nodo successivo
+        * controlla se il crateCheck è al massimo;
+        * nel caso in cui non è richiesto il materiale lo salta;
+        * controlla se ha preso il materiale:
+            * se non lo ha preso, controlla se c'è ne sono abbastanza:
+                * se quel materiale è finito, va a rifornirlo;
+                *  se no, va a prendere il materiale richiesto, riduce la quantità presa da quella presente, e passa alla workbench;
+            * se no, lo mette sulla workbench e aumenta il Check;
+        * tutto viene ciclato grazie al controllo iniziale, se il Check è al massimo passa al nodo successivo.
      */
     Status GatherMaterials()
     {
@@ -165,9 +179,9 @@ public class Worker_Controller : MonoBehaviour
         return MoveTo(speditionTable.position);
     }
     /*una volta consegnato controlla se ha abbastanza energie
-     * invoca il reset dell'ordine sullo schermo;
-     * se le ha, ricomincia il workingLoop, in quanto selector se questa non fallisce ignorerà il resto;
-     * se non la ha fallisce il nodo e passa alla restingSequence.
+        * invoca il reset dell'ordine sullo schermo;
+        * se le ha, ricomincia il workingLoop, in quanto Selector se questa non fallisce ignorerà il resto;
+        * se non la ha, fallisce il nodo e passa alla restingSequence.
      */
     Status EnergyCheck()
     {
@@ -175,14 +189,14 @@ public class Worker_Controller : MonoBehaviour
         if (currentEnergy >= 0) return Status.Success;
         else return Status.Failure;
     }
-    //lo mandiamo a riposare
+    //lo mandiamo a riposare.
     Status GoToRest()
     {
         return MoveTo(rechargeStation.position);
     }
     /*una volta raggiunto la rechargeStation:
-     * setta a false "isWorking"
-     * e finchè l'energia non è al massimo resta nel nodo, fermandolo alla recharge station
+        * setta a false "isWorking";
+        * e finchè l'energia non è al massimo resta nel nodo, fermandolo alla recharge station.
      */
     Status Recharge()
     {
@@ -211,6 +225,11 @@ public class Worker_Controller : MonoBehaviour
         }
         return Status.Running;
     }
+    /* lo stato che fa:
+        * capire al worker se deve andare a prendere un materiale o meno;
+        * se di quel materiale ne ha abbastanza, nel caso non ne ha va a riempire le casse;
+        * craftare l'oggetto.
+     */
     Status Gather()
     {
         if (crateCheck >= 3) return Status.Success;
@@ -239,7 +258,7 @@ public class Worker_Controller : MonoBehaviour
                 if (crates == Status.Success)
                 {
                     Product_Manager.instance.leftQuantity[crateCheck] -= Product_Manager.instance.currentOrder[crateCheck];
-                    if (Product_Manager.instance.leftQuantity[crateCheck] <= 1)
+                    if (Product_Manager.instance.leftQuantity[crateCheck] == 0)
                         Product_Manager.instance.Material[crateCheck].SetActive(false);
                     OnQuantityLeft?.Invoke();
                     hasMaterial = true;

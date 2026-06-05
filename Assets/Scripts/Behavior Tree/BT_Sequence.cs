@@ -1,5 +1,9 @@
 public class BT_Sequence : BT_Node
 {
+    /*Nodo Sequence, comparato alla logica AND:
+        * Se uno dei Nodi Leaf fallisce falliscono anche quelli successivi; 
+        * avendo un nodo Leaf A e un nodo Leaf B, se A ritorna Success, passa a B, altrimenti va alla "ramificazione" successiva; 
+    */
     public BT_Sequence(string n) { nodeName = n; }
 
     public override Status Process()

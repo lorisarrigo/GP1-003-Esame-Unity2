@@ -338,11 +338,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   orderA: {fileID: 1611240392}
-  QuantityA: 020000000000000002000000
+  QuantityA: 010000000000000002000000
   orderB: {fileID: 650531667}
-  QuantityB: 000000000200000002000000
+  QuantityB: 000000000500000004000000
   orderC: {fileID: 2011684414}
-  QuantityC: 020000000200000000000000
+  QuantityC: 030000000400000000000000
   quantity_Txt: {fileID: 893423080}
   quantityLeft_Txt: {fileID: 475636667}
   productSended_Txt: {fileID: 291443781}
@@ -1816,7 +1816,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 7444, y: 1380}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 350.7, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &291443780
 CanvasRenderer:
@@ -6782,10 +6782,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Product_Manager
   maxQuant: 5
+  products:
+  - {fileID: 1100338394}
+  - {fileID: 1957736432}
+  - {fileID: 1293499107}
   Material:
   - {fileID: 1466818467}
   - {fileID: 722352061}
   - {fileID: 1397110969}
+  QuantityA: 010000000000000002000000
+  QuantityB: 000000000500000004000000
+  QuantityC: 030000000400000000000000
   product: 0
   leftQuantity: 000000000000000000000000
   currentOrder: 000000000000000000000000
@@ -13040,10 +13047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6919d8e164dc26740b33eeae0ae2870b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  products:
-  - {fileID: 1100338394}
-  - {fileID: 1957736432}
-  - {fileID: 1293499107}
   workbenchTable: {fileID: 306736749}
   sendingTable: {fileID: 1047739834}
 --- !u!1001 &1892352856
